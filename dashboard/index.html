@@ -3,12 +3,72 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Token Radar: pre-token protocols ranked by implied value</title>
+<title>Token Launch Radar — pre-token protocols ranked by implied launch value</title>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<a class="skip" href="#board">Skip to the board</a>
-<main id="board" tabindex="-1" aria-busy="true"></main>
+<main id="board" tabindex="-1"></main>
+
+<section id="method" class="method">
+  <h2>How this radar prices a launch</h2>
+  <p>
+    Every protocol on this board <strong>records no token</strong> in the snapshot — no market cap, no
+    CoinGecko id, no symbol. That is DefiLlama's record, not proof: a protocol may carry a token its
+    record does not show. The board's implied value is this radar's own claim about one question —
+    <em>what would a token launch be worth if the protocol's record stayed exactly as it is?</em>
+    It is not a prediction that any of these protocols will issue a token, and no figure here comes
+    from a hand-written list of names: the same arithmetic prices every row.
+  </p>
+  <h3>Step 1 — what the market already pays for a dollar of TVL</h3>
+  <p>
+    The snapshot's tokenised protocols carry both a market cap and a TVL, so each category has an
+    observed market-cap-to-TVL multiple. A category is priced at its median observed multiple,
+    winsorised at the snapshot's own 90th percentile (so one outlier — a prediction market trading
+    at 400&times; its TVL — cannot set a whole category's price) and shrunk toward the global median
+    in proportion to the evidence: <span class="formula">multiple = (n &times; median + 8 &times; global median) / (n + 8)</span>,
+    where n is the category's tokenised count. A category with no tokenised protocol takes the global
+    median. The table below is computed from the snapshot at run time, not typed in.
+  </p>
+  <div id="catTable"></div>
+  <h3>Step 2 — four adjustments from the protocol's own record</h3>
+  <ul>
+    <li><strong>Momentum</strong> — 1 + 0.6 &times; clamp(7-day TVL change, &minus;30%, +30%) / 100. A week of growth or flight, damped.</li>
+    <li><strong>Maturity</strong> — 0.78 + 0.30 &times; min(age, 4 years) / 4 years, where age runs from the day DefiLlama began tracking the protocol to the snapshot day. Longer running with no token, more credible the launch. An unrecorded age takes 0.92.</li>
+    <li><strong>Breadth</strong> — 1 + 0.02 per extra chain, up to ten: a launch is worth more where more users already are.</li>
+    <li><strong>Size</strong> — (TVL / $100M)<sup>&minus;0.18</sup>, clamped to [0.65, 1.30]. In the snapshot itself, tokenised protocols trade at a median 0.65&times; TVL in the smallest TVL tercile, 0.32&times; in the middle and 0.08&times; in the largest: big TVL is worth less per dollar, and the model says so.</li>
+  </ul>
+  <p class="formula-line">implied value = TVL &times; category multiple &times; momentum &times; maturity &times; breadth &times; size</p>
+  <h3>Who is ranked — and who is not</h3>
+  <p>
+    Above the snapshot's $50M watchlist floor, the board carries every one of the 40 watchlist
+    protocols and treats that list as complete: a large protocol the house left off was left off for
+    a reason the snapshot does not show (DefiLlama naming a parent protocol), so the radar does not
+    second-guess it. Below the floor it applies the house's published screen itself — no exchanges,
+    no bridges or staking wrappers of tokens that already trade, no versioned pools, no wrapped or
+    staked product names — and ranks everything that passes. Protocols whose token already trades
+    are never ranked; the largest are shown apart, at the market's own values.
+  </p>
+  <h3>Reading a farm plan</h3>
+  <p>
+    Each row's plan is built from the protocol's category, chains, TVL and age: the position a
+    farmer would actually take, what it costs in capital and gas, and how long it runs. Capital is
+    sized to the protocol ($50–$250), hold windows lengthen for younger protocols, and every plan
+    repeats one safety rule in its own words: claim only from links the protocol itself publishes.
+  </p>
+</section>
+
+<div id="liveStrip"></div>
+
+<footer class="foot">
+  <p>
+    Token Launch Radar · model radar-2 · Snapshot: DefiLlama protocol index as of the date in the
+    header, sealed by make.fun. Implied values are this entry's own claims, computed from the
+    snapshot's figures alone; they are not make.fun's claims, not prices, and not a promise that
+    any protocol will issue a token. Farm at your own risk: a position in a pre-token protocol can
+    lose its whole value whether or not a token ever launches.
+  </p>
+</footer>
+
 <script src="../data.js"></script>
 <script src="app.js"></script>
 </body>
